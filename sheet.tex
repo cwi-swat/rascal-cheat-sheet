@@ -1,0 +1,291 @@
+\documentclass[landscape]{article}
+\usepackage[paperwidth=29.7cm,paperheight=21cm,margin=1cm]{geometry}
+\usepackage{times}
+\usepackage{hyperref,url}
+\usepackage[T1]{fontenc}
+\usepackage[scaled=0.8]{beramono}
+\usepackage{rascal}
+\usepackage{multicol}
+\pagestyle{empty}
+\setlength{\columnseprule}{.4pt}
+
+% TODO: fix comprehrensions, range, all, any
+% outline comments (or not)
+% more grammar examples
+% loc example with offset etc.
+
+\def\mysect#1{\vspace*{-20pt}\subsection*{\textsf{#1}}\vspace*{-10pt}}
+
+\begin{document}\sffamily
+\begin{multicols}{3}
+\noindent\textbf{\LARGE Rascal Cheat Sheet}\\[3pt]
+\noindent\url{http://www.rascal-mpl.org}\\[0pt]
+\noindent\url{http://tutor.rascal-mpl.org}
+
+\vspace*{10pt}
+\mysect{Modules}
+\begin{rascal}
+\CAT{Keyword}{module} Example
+
+\CAT{Keyword}{import} ParseTree;         \CAT{Comment}{// import}
+\CAT{Keyword}{extend} lang::std::Layout; \CAT{Comment}{// "inherit"}
+\end{rascal}
+\mysect{Declarations}
+\begin{rascal}
+\CAT{Keyword}{start} \CAT{Keyword}{syntax} Prog    \CAT{Comment}{// start symbol}
+  = prog: Exp* exps \CAT{Comment}{// production}
+  | stats: \{{}Stat \CAT{Constant}{";"}\}{}* \CAT{Comment}{// separated list}
+  | stats: \{{}Stat \CAT{Constant}{";"}\}{}+ \CAT{Comment}{// one-or-more sep. list}
+  | \CAT{Constant}{"private"}? Func; \CAT{Comment}{// optional}
+
+\CAT{Keyword}{syntax} Exp
+  = var: Id
+  | \CAT{Keyword}{left} mul: Exp l \CAT{Constant}{"*"} Exp r \CAT{Comment}{// left associative}
+  | \CAT{Keyword}{left} div: Exp!div \CAT{Constant}{"/"} Exp!div \CAT{Comment}{// reject}
+  \textgreater{} \CAT{Keyword}{left} add: Exp l \CAT{Constant}{"+"} Exp r \CAT{Comment}{// "\textgreater{}" = priority}
+  | \CAT{Keyword}{bracket} \CAT{Constant}{"("} Exp \CAT{Constant}{")"}; 
+
+\CAT{Keyword}{lexical} Comment
+  = \^{}\CAT{Constant}{"\#"} !{}[\CAT{Constant}{\textbackslash{}n}]* \${}; \CAT{Comment}{// begin/end markers}
+
+\CAT{Keyword}{lexical} Id
+  = ({}[\CAT{Constant}{a}\CAT{Keyword}{-}\CAT{Constant}{z}\CAT{Constant}{A}\CAT{Keyword}{-}\CAT{Constant}{Z}] !\textless{}\textless{} \CAT{Comment}{// look behind restriction}
+    {}[\CAT{Constant}{a}\CAT{Keyword}{-}\CAT{Constant}{z}\CAT{Constant}{A}\CAT{Keyword}{-}\CAT{Constant}{Z}]{}[\CAT{Constant}{a}\CAT{Keyword}{-}\CAT{Constant}{z}\CAT{Constant}{A}\CAT{Keyword}{-}\CAT{Constant}{Z}\CAT{Constant}{0}\CAT{Keyword}{-}\CAT{Constant}{9}\CAT{Constant}{\_{}}]* \CAT{Comment}{// character classes}
+    !\textgreater{}\textgreater{} {}[\CAT{Constant}{a}\CAT{Keyword}{-}\CAT{Constant}{z}\CAT{Constant}{A}\CAT{Keyword}{-}\CAT{Constant}{Z}\CAT{Constant}{0}\CAT{Keyword}{-}\CAT{Constant}{9}\CAT{Constant}{\_{}}]) \CAT{Comment}{// lookahead restriction}
+    \textbackslash{} Reserved;  \CAT{Comment}{// subtract keywords}
+
+\CAT{Keyword}{layout} Layout    \CAT{Comment}{// for whitespace/comments}
+  = {}[\CAT{Constant}{\textbackslash{} }\CAT{Constant}{\textbackslash{}t}\CAT{Constant}{\textbackslash{}n}\CAT{Constant}{\textbackslash{}r}]*;
+
+\CAT{Keyword}{keyword} Reserved \CAT{Comment}{// keyword class}
+  = \CAT{Constant}{"if"} | \CAT{Constant}{"else"}; \CAT{Comment}{// finite langs}
+
+\CAT{Keyword}{private} \CAT{Keyword}{real} PI = 3.14; \CAT{Comment}{// variables}
+
+
+
+\CAT{Comment}{// Algebraic data types (ADT)}
+\CAT{Keyword}{data} Exp   
+  = var(\CAT{Keyword}{str} x)  \CAT{Comment}{// unary constructor}
+  | add(Exp l, Exp r); \CAT{Comment}{// binary constructor}
+
+\CAT{Keyword}{data} Person        \CAT{Comment}{// keyword parameter}
+  = person(\CAT{Keyword}{int} id, \CAT{Keyword}{bool} married=\CAT{Keyword}{false});
+
+\CAT{Keyword}{alias} Age = \CAT{Keyword}{int}; \CAT{Comment}{// type alias}
+
+\CAT{Keyword}{anno} \CAT{Keyword}{loc} Exp@location; \CAT{Comment}{// annotation}
+
+\CAT{Comment}{// Functions: signatures are lists }
+\CAT{Comment}{// of (typed) patterns; may have}
+\CAT{Comment}{// keyword parameters.}
+\CAT{Keyword}{void} f(\CAT{Keyword}{int} x) \{{} println(x); \}{}  \CAT{Comment}{// block style}
+\CAT{Keyword}{int} inc(\CAT{Keyword}{int} x) = x+1; \CAT{Comment}{// rewrite style}
+\CAT{Keyword}{int} inc0(\CAT{Keyword}{int} x) = x+1 \CAT{Keyword}{when} x == \CAT{Keyword}{0}; \CAT{Comment}{// side condition}
+\CAT{Keyword}{default} \CAT{Keyword}{int} inc0(\CAT{Keyword}{int} x) = x; \CAT{Comment}{// when all others fail}
+
+\CAT{Comment}{// Test functions (invoke from console with :test) }
+\CAT{Keyword}{test} \CAT{Keyword}{bool} add() = 1+2 == 3; 
+
+\CAT{Comment}{// randomized test function}
+\CAT{Keyword}{test} \CAT{Keyword}{bool} comm(\CAT{Keyword}{int} x, \CAT{Keyword}{int} y) = x+y == y+x; 
+
+\CAT{Comment}{// Foreign function interface to Java}
+\CAT{Comment}{@javaClass\{{}name.of.javaClass.with.Method\}{}}
+\CAT{Keyword}{java} \CAT{Keyword}{int} method(); 
+\end{rascal}
+\mysect{Statements}
+\begin{rascal}
+\CAT{Comment}{// Standard control-flow}
+\CAT{Keyword}{if} (E) S;         
+\CAT{Keyword}{if} (E) S; \CAT{Keyword}{else} S;
+\CAT{Keyword}{while} (E) S;
+\CAT{Keyword}{do} S; \CAT{Keyword}{while}(E);
+\CAT{Keyword}{continue}; \CAT{Keyword}{break}; 
+\CAT{Keyword}{return}; \CAT{Keyword}{return} E;
+
+\CAT{Comment}{// Loop for all bindings}
+\CAT{Comment}{// generated by patterns E,...}
+\CAT{Keyword}{for} (i \textless{}- {}[\CAT{Keyword}{0}..10]) S;
+\CAT{Keyword}{fail}; \CAT{Comment}{// control backtracking}
+\CAT{Keyword}{append} E; \CAT{Comment}{// add to loop result list}
+\CAT{Comment}{// Pattern-based switch-case}
+\CAT{Keyword}{switch} (E) \{{}
+  \CAT{Keyword}{case} P: S; \CAT{Comment}{// do something}
+  \CAT{Keyword}{case} P =\textgreater{} E \CAT{Comment}{// rewrite it}
+  \CAT{Keyword}{default}: S; \CAT{Comment}{// otherwise}
+\}{}
+
+\CAT{Comment}{// Traversal with visit}
+\CAT{Comment}{// Like switch, but matches}
+\CAT{Comment}{// at arbitrary depth of value}
+\CAT{Keyword}{visit} (E) \{{}
+  \CAT{Keyword}{case} P: S;  \CAT{Comment}{// do something}
+  \CAT{Keyword}{case} P =\textgreater{} E \CAT{Comment}{// rewrite something}
+  \CAT{Keyword}{case} P =\textgreater{} E \CAT{Keyword}{when} E
+\}{}
+\CAT{Keyword}{insert} E; \CAT{Comment}{// rewrite subject}
+
+\CAT{Keyword}{try} S; \CAT{Comment}{// Pattern-based try-catch}
+\CAT{Keyword}{catch} P: S; \CAT{Comment}{// match to catch}
+\CAT{Keyword}{finally} S;
+
+\CAT{Keyword}{throw} E; \CAT{Comment}{// throw values}
+
+\CAT{Comment}{// fix-point equation solving}
+\CAT{Comment}{// iterates until all params are stable.}
+\CAT{Keyword}{solve} (out,ins) \{{}
+  out{}[b] = ( \{{}\}{} | \CAT{Keyword}{it} + ins{}[s] | s \textless{}- succ{}[b] );
+  ins{}[b] = (out{}[b] \CAT{Keyword}{-} kill{}[b]) + gen{}[b];
+\}{};
+
+x = 1; \CAT{Comment}{// assignment   }
+nums{}[\CAT{Keyword}{0}] = 1; \CAT{Comment}{// subscript assignment}
+nums{}[1,3..10] = 2; \CAT{Comment}{// sliced (see below)}
+p.age = 31;  \CAT{Comment}{// field assignment}
+ast@location = l; \CAT{Comment}{// annotation update}
+\textless{}p, a\textgreater{} = \textless{}\CAT{Constant}{"ed"}, 30\textgreater{}; \CAT{Comment}{// destructuring}
+ 
+\CAT{Comment}{// A op=E  == A = A op E}
+A += E; A -= E; A *= E;
+A /= E; A \&{}= E;
+\end{rascal}
+\mysect{Expressions}
+\begin{rascal}
+\CAT{Comment}{// Standard operators}
+E + E; E \CAT{Keyword}{-} E; E * E; E / E; E \%{} E;
+E \&{}\&{} E; E || E; E == E; E != E;
+E \textgreater{} E; E \textgreater{}= E; E \textless{} E; E \textgreater{}= E; \CAT{Keyword}{-}E; !E;
+E ? E : E; 
+
+\CAT{Comment}{// Projections}
+p.age; \CAT{Comment}{// select field (tuple/constructor)}
+p{}[age=31]; \CAT{Comment}{// update field }
+ps\textless{}name,age\textgreater{}; \CAT{Comment}{// select named column(s)}
+ps\textless{}1,\CAT{Keyword}{0}\textgreater{}; \CAT{Comment}{// select/swap columns by position}
+graph{}[\CAT{Constant}{"from"}]; \CAT{Comment}{// right image (list,str,map/rel/lrel)}
+alist{}[\CAT{Keyword}{-}1]; \CAT{Comment}{// subscript (last)}
+graph{}[\CAT{Constant}{"from"}, \CAT{Constant}{"label"}];
+inc(2); \CAT{Comment}{// function call}
+x{}[1..10]; \CAT{Comment}{// slicing (list, string)}
+x{}[\CAT{Keyword}{0}..]; x{}[..10]; \CAT{Comment}{// open slices}
+x{}[..\CAT{Keyword}{-}1]; \CAT{Comment}{// negative slicing (prefix)}
+x{}[\CAT{Keyword}{0},2..10]; \CAT{Comment}{// slicing with next}
+ 
+{}[\CAT{Keyword}{0}..10]; \CAT{Comment}{// range (incl/excl)}
+{}[\CAT{Keyword}{0},2..10]; \CAT{Comment}{// range with next }
+
+\CAT{Comment}{// Comprehensions}
+{}[ i*i | i \textless{}- {}[1..10] ]; \CAT{Comment}{// list }
+\{{} \textless{}i, i*i\textgreater{} | i \textless{}- {}[1..10] \}{}; \CAT{Comment}{// set }
+( i: i*i | i \textless{}- {}[1..10]); \CAT{Comment}{// map }
+
+\CAT{Comment}{// Reducing comprehension}
+( \CAT{Keyword}{0} | \CAT{Keyword}{it} + i | i \textless{}- {}[1..10] );
+
+\CAT{Comment}{// Other operators}
+E \CAT{Keyword}{mod} E; \CAT{Comment}{// modulo}
+E \&{} E; \CAT{Comment}{// intersection}
+E \CAT{Keyword}{join} E; \CAT{Comment}{// relation join}
+E \CAT{Keyword}{o} E;  \CAT{Comment}{// compostion}
+
+\CAT{Keyword}{all}(i \textless{}- {}[1..10], i \textgreater{} \CAT{Keyword}{0}); \CAT{Comment}{// big and}
+\CAT{Keyword}{any}(i \textless{}- {}[1..10], i \%{} 2 == \CAT{Keyword}{0}); \CAT{Comment}{// big or}
+E ==\textgreater{} E; \CAT{Comment}{// implication}
+E \textless{}==\textgreater{} E; \CAT{Comment}{// equivalence}
+
+
+
+E \CAT{Keyword}{in} E; \CAT{Comment}{// membership}
+E \CAT{Keyword}{notin} E; \CAT{Comment}{// non-membership}
+
+E \CAT{Keyword}{has} N; \CAT{Comment}{// has label}
+E \CAT{Keyword}{is} N; \CAT{Comment}{// is constructor}
+
+E+; \CAT{Comment}{// transitive closure}
+E*; \CAT{Comment}{// trans. refl. closure}
+
+E{}[N=E]; \CAT{Comment}{// update field}
+E{}[@N=E]; \CAT{Comment}{// update annotation}
+
+\CAT{Comment}{// Matching and generation}
+P := E; \CAT{Comment}{// pattern match}
+P !:= E; \CAT{Comment}{// anti-match}
+P \textless{}- E; \CAT{Comment}{// generator}
+
+\CAT{Comment}{// Closures}
+\CAT{Keyword}{int}(\CAT{Keyword}{int} x) \{{} \CAT{Keyword}{return} x + 1; \}{};
+(\CAT{Keyword}{str} x) \{{} println(x); \}{}; \CAT{Comment}{// void}
+() \{{} println(\CAT{Constant}{"y"}); \}{}; \CAT{Comment}{// nillary void }
+
+\CAT{Comment}{// String templates}
+\CAT{Constant}{"x + y = \textless{}}x + y\CAT{Constant}{\textgreater{}"}; \CAT{Comment}{// interpolation}
+
+\CAT{Comment}{// Control-flow string interpolation}
+\CAT{Comment}{// (with for, if, while, do-while)}
+\CAT{Comment}{// Single quote (') indicates margin.}
+\CAT{Comment}{// Nested templates are auto-indented}
+\CAT{Constant}{"\textless{}}\CAT{Keyword}{for} (i\textless{}-{}[\CAT{Keyword}{0}..10]) \{{}\CAT{Constant}{\textgreater{} 
+'  \textless{}}i\CAT{Constant}{\textgreater{}
+'\textless{}}\}{}\CAT{Constant}{\textgreater{}"};
+\end{rascal}
+\mysect{Types and values}
+\begin{rascal}
+\CAT{Comment}{// Atomic types}
+\CAT{Keyword}{bool} x = \CAT{Keyword}{true} || \CAT{Keyword}{false};
+\CAT{Keyword}{int} x = 1;
+\CAT{Keyword}{real} x = 2.3E-14;
+\CAT{Keyword}{rat} x = 1r2;
+\CAT{Keyword}{num} x = 1 + 3.0;
+\CAT{Keyword}{str} x = \CAT{Constant}{"rascal"};
+\CAT{Keyword}{loc} x = |file:///etc/passwd|;
+\CAT{Keyword}{datetime} x = \${}1948\CAT{Keyword}{-}02\CAT{Keyword}{-}11\${};
+
+
+\CAT{Comment}{// Tuples}
+\CAT{Keyword}{tuple}{}[\CAT{Keyword}{str}, \CAT{Keyword}{int}] x = \textless{}\CAT{Constant}{"ed"}, 30\textgreater{};
+\CAT{Keyword}{tuple}{}[\CAT{Keyword}{str} name, \CAT{Keyword}{int} age] x = \textless{}\CAT{Constant}{"ed"}, 30\textgreater{};
+
+\CAT{Comment}{// Trees (all ADTs are subtype of node)}
+\CAT{Keyword}{node} x = \CAT{Constant}{"person"}(\CAT{Constant}{"ed"}, 30);     \CAT{Comment}{// generic node}
+Exp x = add(var(\CAT{Constant}{"x"}), var(\CAT{Constant}{"y"})); \CAT{Comment}{// ADT value}
+Exp e1 = (Exp)`x * y`; \CAT{Comment}{// concrete syntax value}
+Exp e2 = (Exp)`a + (\CAT{MetaVariable}{\textless{}Exp e1\textgreater{}})`; \CAT{Comment}{// interpolation}
+
+\CAT{Comment}{// Collection values}
+\CAT{Keyword}{list}{}[\CAT{Keyword}{int}] x = {}[1,2,3];
+\CAT{Keyword}{set}{}[\CAT{Keyword}{bool}] x = \{{}\CAT{Keyword}{true},\CAT{Keyword}{false}\}{};
+\CAT{Keyword}{map}{}[\CAT{Keyword}{int}, \CAT{Keyword}{bool}] x = (1: \CAT{Keyword}{true}, 2: \CAT{Keyword}{false});
+\CAT{Keyword}{map}{}[\CAT{Keyword}{int} n, \CAT{Keyword}{bool} b] x = (1: \CAT{Keyword}{true}, 2: \CAT{Keyword}{false});
+\CAT{Keyword}{rel}{}[\CAT{Keyword}{int}, \CAT{Keyword}{bool}] x = \{{}\textless{}1, \CAT{Keyword}{true}\textgreater{}, \textless{}2, \CAT{Keyword}{false}\textgreater{}\}{};
+\CAT{Keyword}{rel}{}[\CAT{Keyword}{int} n, \CAT{Keyword}{bool} b] x = \{{}\textless{}1, \CAT{Keyword}{true}\textgreater{}, \textless{}2, \CAT{Keyword}{false}\textgreater{}\}{};
+\CAT{Keyword}{lrel}{}[\CAT{Keyword}{int} n, \CAT{Keyword}{bool} b] x = {}[\textless{}1, \CAT{Keyword}{true}\textgreater{}, \textless{}1, \CAT{Keyword}{true}\textgreater{}];
+
+\CAT{Comment}{// Functions}
+\CAT{Keyword}{int}(\CAT{Keyword}{int},\CAT{Keyword}{int})f = \CAT{Keyword}{int}(\CAT{Keyword}{int} x, \CAT{Keyword}{int} y) \{{} \CAT{Keyword}{return} x+y; \}{};
+
+\CAT{Comment}{// Misc  }
+\CAT{Keyword}{value} x = anything; \CAT{Comment}{// top type}
+\CAT{Keyword}{type}{}[\CAT{Keyword}{int}] t = \#\CAT{Keyword}{int}; \CAT{Comment}{// reified types}
+\CAT{Keyword}{int} size(\CAT{Keyword}{list}{}[\&{}T] l); \CAT{Comment}{// generics}
+\end{rascal}
+\mysect{Patterns}
+\begin{rascal}
+\CAT{Keyword}{int} x := 3; \CAT{Comment}{// typed pattern}
+x := 3;  \CAT{Comment}{// free or bound variable (untyped)}
+\textless{}\CAT{Keyword}{int} x, y\textgreater{} := \textless{}3, \CAT{Constant}{"x"}\textgreater{}; \CAT{Comment}{// tuple pattern}
+{}[1, 2, x] := {}[1, 2, 3]; \CAT{Comment}{// list pattern}
+\{{}x, 2, 3\}{} := \{{}2, 3, 1\}{}; \CAT{Comment}{// set pattern}
+{}[1, *xs, 4] := {}[1,2,3,4]; \CAT{Comment}{// splice-variable}
+add(l, r) := add(var(\CAT{Constant}{"x"}), var(\CAT{Constant}{"y"})); \CAT{Comment}{// constructor}
+/\CAT{Keyword}{str} x := add(var(\CAT{Constant}{"x"}), var(\CAT{Constant}{"y"})); \CAT{Comment}{// deep match}
+a:add(\_{},\_{}) := x; \CAT{Comment}{// labeled pattern}
+Exp a:add(\_{},\_{}) := x; \CAT{Comment}{// typed, labeled pattern}
+/{}[a-z]/ := \CAT{Constant}{"x"}; \CAT{Comment}{// regular expression}
+/.\textless{}mid:{}[a-z]\textgreater{}./ := \CAT{Constant}{"abc"}; \CAT{Comment}{// named groups }
+
+(Exp)`\CAT{MetaVariable}{\textless{}Exp a\textgreater{}} + \CAT{MetaVariable}{\textless{}Exp b\textgreater{}}` := e2; \CAT{Comment}{// concrete matching}
+(Prog)`x, \CAT{MetaVariable}{\textless{}\{{}Exp \CAT{Constant}{","}\}{}* es\textgreater{}}` := p; \CAT{Comment}{// list matching}
+\end{rascal}
+\end{multicols}
+\end{document}
