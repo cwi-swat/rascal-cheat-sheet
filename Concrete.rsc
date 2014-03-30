@@ -1,4 +1,4 @@
-module lang::ql::Concrete
+module Concrete
 
 extend lang::std::Layout; // extend
 
