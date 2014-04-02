@@ -64,7 +64,7 @@
 \CAT{Comment}{// May have keyword parameters.}
 \CAT{Keyword}{void} f(\CAT{Keyword}{int} x) \{{} println(x); \}{}      \CAT{Comment}{// block style}
 \CAT{Keyword}{int} inc(\CAT{Keyword}{int} x) = x+1;              \CAT{Comment}{// rewrite style}
-\CAT{Keyword}{int} inc0(\CAT{Keyword}{int} x) = x+1 \CAT{Keyword}{when} x == \CAT{Keyword}{0}; \CAT{Comment}{// side condition}
+\CAT{Keyword}{int} inc0(\CAT{Keyword}{int} x) = x+1 \CAT{Keyword}{when} x == 0; \CAT{Comment}{// side condition}
 \CAT{Keyword}{default} \CAT{Keyword}{int} inc0(\CAT{Keyword}{int} x) = x;       \CAT{Comment}{// otherwise}
 
 \CAT{Comment}{// Test functions (invoke from console with :test) }
@@ -94,9 +94,9 @@
   = \^{}\CAT{Constant}{"\#"} !{}[\CAT{Constant}{\textbackslash{}n}]* \${}; \CAT{Comment}{// begin/end markers}
 
 \CAT{Keyword}{lexical} Id
-  = ({}[\CAT{Constant}{a}\CAT{Keyword}{-}\CAT{Constant}{z}\CAT{Constant}{A}\CAT{Keyword}{-}\CAT{Constant}{Z}] !\textless{}\textless{}         \CAT{Comment}{// look behind restriction}
-    {}[\CAT{Constant}{a}\CAT{Keyword}{-}\CAT{Constant}{z}\CAT{Constant}{A}\CAT{Keyword}{-}\CAT{Constant}{Z}]{}[\CAT{Constant}{a}\CAT{Keyword}{-}\CAT{Constant}{z}\CAT{Constant}{A}\CAT{Keyword}{-}\CAT{Constant}{Z}\CAT{Constant}{0}\CAT{Keyword}{-}\CAT{Constant}{9}\CAT{Constant}{\_{}}]* \CAT{Comment}{// character classes}
-    !\textgreater{}\textgreater{} {}[\CAT{Constant}{a}\CAT{Keyword}{-}\CAT{Constant}{z}\CAT{Constant}{A}\CAT{Keyword}{-}\CAT{Constant}{Z}\CAT{Constant}{0}\CAT{Keyword}{-}\CAT{Constant}{9}\CAT{Constant}{\_{}}])     \CAT{Comment}{// lookahead restriction}
+  = ({}[\CAT{Constant}{a}-\CAT{Constant}{z}\CAT{Constant}{A}-\CAT{Constant}{Z}] !\textless{}\textless{}         \CAT{Comment}{// look behind restriction}
+    {}[\CAT{Constant}{a}-\CAT{Constant}{z}\CAT{Constant}{A}-\CAT{Constant}{Z}]{}[\CAT{Constant}{a}-\CAT{Constant}{z}\CAT{Constant}{A}-\CAT{Constant}{Z}\CAT{Constant}{0}-\CAT{Constant}{9}\CAT{Constant}{\_{}}]* \CAT{Comment}{// character classes}
+    !\textgreater{}\textgreater{} {}[\CAT{Constant}{a}-\CAT{Constant}{z}\CAT{Constant}{A}-\CAT{Constant}{Z}\CAT{Constant}{0}-\CAT{Constant}{9}\CAT{Constant}{\_{}}])     \CAT{Comment}{// lookahead restriction}
     \textbackslash{} Reserved;           \CAT{Comment}{// subtract keywords}
 
 \CAT{Keyword}{layout} Layout \CAT{Comment}{// for whitespace/comments}
@@ -116,7 +116,7 @@
 \CAT{Keyword}{return}; \CAT{Keyword}{return} E;
 
 \CAT{Comment}{// Loop over all bindings produce by patterns}
-\CAT{Keyword}{for} (i \textless{}- {}[\CAT{Keyword}{0}..10]) S; \CAT{Comment}{// Loop 10 times}
+\CAT{Keyword}{for} (i \textless{}- {}[0..10]) S; \CAT{Comment}{// Loop 10 times}
 
 \CAT{Keyword}{fail};     \CAT{Comment}{// control backtracking}
 \CAT{Keyword}{append} E; \CAT{Comment}{// add to loop result list}
@@ -151,11 +151,11 @@
 \CAT{Comment}{// iterates until all params are stable}
 \CAT{Keyword}{solve} (out,ins) \{{}
   out{}[b] = ( \{{}\}{} | \CAT{Keyword}{it} + ins{}[s] | s \textless{}- succ{}[b] );
-  ins{}[b] = (out{}[b] \CAT{Keyword}{-} kill{}[b]) + gen{}[b];
+  ins{}[b] = (out{}[b] - kill{}[b]) + gen{}[b];
 \}{};
 
 x = 1;               \CAT{Comment}{// assignment   }
-nums{}[\CAT{Keyword}{0}] = 1;         \CAT{Comment}{// subscript assignment}
+nums{}[0] = 1;         \CAT{Comment}{// subscript assignment}
 nums{}[1,3..10] = 2;   \CAT{Comment}{// sliced (see below)}
 p.age = 31;          \CAT{Comment}{// field assignment}
 ast@location = l;    \CAT{Comment}{// annotation update}
@@ -168,33 +168,33 @@ A /= E; A \&{}= E;
 \mysect{Expressions}
 \begin{rascal}
 \CAT{Comment}{// Standard operators}
-E + E; E \CAT{Keyword}{-} E; E * E; E / E; E \%{} E;
+E + E; E - E; E * E; E / E; E \%{} E;
 E \&{}\&{} E; E || E; E == E; E != E;
-E \textgreater{} E; E \textgreater{}= E; E \textless{} E; E \textgreater{}= E; \CAT{Keyword}{-}E; !E;
+E \textgreater{} E; E \textgreater{}= E; E \textless{} E; E \textless{}= E; -E; !E;
 E ? E : E; 
 
 \CAT{Comment}{// Projections}
 p.age;           \CAT{Comment}{// select field (tuple/constructor)}
 p{}[age=31];       \CAT{Comment}{// update field }
 ps\textless{}name,age\textgreater{};    \CAT{Comment}{// select named column(s)}
-ps\textless{}1,\CAT{Keyword}{0}\textgreater{};         \CAT{Comment}{// select/swap columns by position}
+ps\textless{}1,0\textgreater{};         \CAT{Comment}{// select/swap columns by position}
 graph{}[\CAT{Constant}{"from"}];   \CAT{Comment}{// image (list,str,map/rel/lrel)}
-alist{}[\CAT{Keyword}{-}1];       \CAT{Comment}{// subscript (last)}
+alist{}[-1];       \CAT{Comment}{// subscript (last)}
 graph{}[\CAT{Constant}{"from"}, \CAT{Constant}{"label"}];
 inc(2);          \CAT{Comment}{// function call}
 x{}[1..10];        \CAT{Comment}{// slicing (list, string)}
-x{}[\CAT{Keyword}{0}..]; x{}[..10]; \CAT{Comment}{// open slices}
-x{}[..\CAT{Keyword}{-}1];         \CAT{Comment}{// negative slicing (prefix)}
-x{}[\CAT{Keyword}{0},2..10];      \CAT{Comment}{// slicing with next}
+x{}[0..]; x{}[..10]; \CAT{Comment}{// open slices}
+x{}[..-1];         \CAT{Comment}{// negative slicing (prefix)}
+x{}[0,2..10];      \CAT{Comment}{// slicing with next}
  
-{}[\CAT{Keyword}{0}..10];   \CAT{Comment}{// range (incl/excl)}
-{}[\CAT{Keyword}{0},2..10]; \CAT{Comment}{// range with next }
+{}[0..10];   \CAT{Comment}{// range (incl/excl)}
+{}[0,2..10]; \CAT{Comment}{// range with next }
 
 \CAT{Comment}{// Comprehensions}
 {}[ i*i | i \textless{}- {}[1..10] ];        \CAT{Comment}{// list }
 \{{} \textless{}i, i*i\textgreater{} | i \textless{}- {}[1..10] \}{};   \CAT{Comment}{// set }
 ( i: i*i | i \textless{}- {}[1..10]);     \CAT{Comment}{// map }
-( \CAT{Keyword}{0} | \CAT{Keyword}{it} + i | i \textless{}- {}[1..10] ); \CAT{Comment}{// reducing}
+( 0 | \CAT{Keyword}{it} + i | i \textless{}- {}[1..10] ); \CAT{Comment}{// reducing}
 
 \CAT{Comment}{// Other operators}
 E \CAT{Keyword}{mod} E;  \CAT{Comment}{// modulo}
@@ -202,8 +202,8 @@ E \&{} E;    \CAT{Comment}{// intersection}
 E \CAT{Keyword}{join} E; \CAT{Comment}{// relation join}
 E \CAT{Keyword}{o} E;    \CAT{Comment}{// compostion}
 
-\CAT{Keyword}{all}(i \textless{}- {}[1..10], i \textgreater{} \CAT{Keyword}{0});      \CAT{Comment}{// big and}
-\CAT{Keyword}{any}(i \textless{}- {}[1..10], i \%{} 2 == \CAT{Keyword}{0}); \CAT{Comment}{// big or}
+\CAT{Keyword}{all}(i \textless{}- {}[1..10], i \textgreater{} 0);      \CAT{Comment}{// big and}
+\CAT{Keyword}{any}(i \textless{}- {}[1..10], i \%{} 2 == 0); \CAT{Comment}{// big or}
 E ==\textgreater{} E;                       \CAT{Comment}{// implication}
 E \textless{}==\textgreater{} E;                      \CAT{Comment}{// equivalence}
 
@@ -233,8 +233,8 @@ P \textless{}- E;  \CAT{Comment}{// generator}
 \CAT{Comment}{// Control-flow string interpolation (with for, if, }
 \CAT{Comment}{// while, do-while). Tick (') indicates margin.}
 \CAT{Comment}{// Nested templates are auto-indented.}
-\CAT{Constant}{"\textless{}}\CAT{Keyword}{for} (i\textless{}-{}[\CAT{Keyword}{0}..10]) \{{}\CAT{Constant}{\textgreater{} 
-'  \textless{}}\CAT{Keyword}{if} (i \%{} 2 == \CAT{Keyword}{0}) \{{}\CAT{Constant}{\textgreater{}
+\CAT{Constant}{"\textless{}}\CAT{Keyword}{for} (i\textless{}-{}[0..10]) \{{}\CAT{Constant}{\textgreater{} 
+'  \textless{}}\CAT{Keyword}{if} (i \%{} 2 == 0) \{{}\CAT{Constant}{\textgreater{}
 '     i = \textless{}}i\CAT{Constant}{\textgreater{}
 '  \textless{}}\}{}\CAT{Constant}{\textgreater{}
 '\textless{}}\}{}\CAT{Constant}{\textgreater{}"};
@@ -248,7 +248,7 @@ P \textless{}- E;  \CAT{Comment}{// generator}
 \CAT{Keyword}{rat} x = 1r2;
 \CAT{Keyword}{num} x = 1 + 3.0;
 \CAT{Keyword}{str} x = \CAT{Constant}{"rascal"};
-\CAT{Keyword}{datetime} x = \${}1948\CAT{Keyword}{-}02\CAT{Keyword}{-}11\${};
+\CAT{Keyword}{datetime} x = \${}1948-02-11\${};
 \CAT{Keyword}{loc} x = |file:///etc/passwd|;
 \CAT{Keyword}{loc} x = |file://foo|(
    10,      \CAT{Comment}{// .offset}
